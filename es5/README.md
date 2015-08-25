@@ -2,7 +2,6 @@
 
 *A mostly reasonable approach to JavaScript*
 
-
 ## Table of Contents
 
   1. [Types](#types)
@@ -12,6 +11,7 @@
   1. [Functions](#functions)
   1. [Properties](#properties)
   1. [Variables](#variables)
+  1. [Promises] (#promises)
   1. [Hoisting](#hoisting)
   1. [Comparison Operators & Equality](#comparison-operators--equality)
   1. [Blocks](#blocks)
@@ -314,6 +314,52 @@
     }
     ```
 
+  - When returning functions, return a named function instead of an anonymous one and make sure the function is well-documented through comments.
+  
+
+    ```javascript
+    // bad
+    return function (companies) {
+        return Q.all(
+            _(companies)
+                .map(fetchAndFormatCompanyData(deviceDisplay))
+                .value()
+        ).then(function (obj) {
+                obj = _.compact(obj);
+                if (obj.length === 0) {
+                    throw errorHelper.nonFatalError('companies cannot be found for the candidate', 'zero_companies');
+                }
+                return obj;
+            });
+    };
+  
+    // good
+    /**
+     * @description
+     * Denormalize the given companies for the specific deviceDisplay
+     * parameters, adjusting images, etc, accordingly.
+     *
+     * @param companies
+     * @returns {Promise<Object|Error>}
+     */
+    function denormalizeCompanyForDevice (companies) {
+        return Q.all(
+            _(companies).map(fetchAndFormatCompanyData(deviceDisplay))
+                .value()
+        ).then(function (obj) {
+            obj = _.compact(obj);
+    
+            if (obj.length === 0) {
+                throw errorHelper.nonFatalError('No companies found for the given Candidate', 'zero_companies');
+            }
+    
+            return obj;
+        });
+    }
+    
+    return denormalizeCompanyForDevice;
+    ```
+
 **[⬆ back to top](#table-of-contents)**
 
 
@@ -476,6 +522,48 @@
 
 **[⬆ back to top](#table-of-contents)**
 
+## Promises
+
+  - We're following the [Promises/A+](https://github.com/promises-aplus/promises-spec) specs. Read this, understand, ask if you can't.
+  
+  - All returned promises should be named promises much all returned functions should be named functions
+
+    ```javascript
+    // bad
+    return Q.all(
+        _(companies)
+            .map(fetchAndFormatCompanyData(deviceDisplay))
+            .value()
+    ).then(function (obj) {
+        obj = _.compact(obj);
+        
+        if (obj.length === 0) {
+            throw errorHelper.nonFatalError('Companies cannot be found for the candidate', 'zero_companies');
+        }
+        
+        return obj;
+    });
+    
+    // good
+    var fetchAndFormatCompanyDataPromise = Q.all(
+        _(companies)
+            .map(fetchAndFormatCompanyData(deviceDisplay))
+            .value()
+    ).then(function (obj) {
+        obj = _.compact(obj);
+        
+        if (obj.length === 0) {
+            throw errorHelper.nonFatalError('Companies cannot be found for the candidate', 'zero_companies');
+        }
+        
+        return obj;
+    });
+    
+    return fetchAndFormatCompanyDataPromise;
+    
+    ```
+
+**[⬆ back to top](#table-of-contents)**
 
 ## Hoisting
 
@@ -1424,6 +1512,61 @@
 
 
 ## Modules
+
+  - Organize and document the dependencies for the module at the top of the module clearly separating internal libraries, vendor libraries, models, controllers and anything else
+
+    ```javascript
+    // bad
+    var Company = require('core').models.Company,
+        Activity = require('core').models.Activity,
+        CompanyLike = require('core').models.company.Like,
+        Market = require('core').models.Market,
+        Role = require('core').models.Role,
+        Media = require('core').models.Media,
+        Tool = require('core').models.Tool,
+        _ = require('lodash'),
+        fs = require('fs'),
+        config = require('config'),
+        async = require('async'),
+        AWS = require('aws-sdk'),
+        s3 = new AWS.S3(config.awsCreds),
+        Q = require('q'),
+        moment = require('moment'),
+        logger = require('services').logger,
+        errorHelper = require('core').helper.error,
+        utility = require('./utilities’);
+
+    // good
+    /**
+     * Models
+     */
+    var Company = require('core').models.Company;
+    var Activity = require('core').models.Activity;
+    var CompanyLike = require('core').models.company.Like;
+    var Market = require('core').models.Market;
+    var Role = require('core').models.Role;
+    var Media = require('core').models.Media;
+    var Tool = require('core').models.Tool;
+
+    /**
+     * Libraries (Vendor)
+     */
+    var _ = require('lodash');
+    var fs = require('fs');
+    var config = require('config');
+    var async = require('async');
+    var AWS = require('aws-sdk');
+    var s3 = new AWS.S3(config.awsCreds);
+    var Q = require('q');
+    var moment = require('moment');
+
+    /**
+     * Libraries (Internal)
+     */
+    var logger = require('services').logger;
+    var errorHelper = require('core').helper.error;
+    var utility = require('./utilities’);
+    ```
 
   - The module should start with a `!`. This ensures that if a malformed module forgets to include a final semicolon there aren't errors in production when the scripts get concatenated. [Explanation](https://github.com/airbnb/javascript/issues/44#issuecomment-13063933)
   - The file should be named with camelCase, live in a folder with the same name, and match the name of the single export.
