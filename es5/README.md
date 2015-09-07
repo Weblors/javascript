@@ -845,6 +845,39 @@
     }
     ```
 
+  - When documenting Promises, use the `Promise<ResolvedValue|ErrorValue>` format.
+  
+    ```javascript
+    
+    // bad
+    /**
+     * @description
+     * Something descriptive, but brief about what this function does.
+     * 
+     * @param {String} name - Some name of some entity
+     * @returns Promise
+     */
+    function something (name) {
+      ...
+      
+      return namedPromise;
+    }
+     
+    // good
+    /**
+     * @description
+     * Something descriptive, but brief about what this function does.
+     * 
+     * @param {String} name - Some name of some entity
+     * @returns Promise<Array|Error>
+     */
+    function something (name) {
+      ...
+      
+      return namedPromise;
+    }
+    ```
+
 **[⬆ back to top](#table-of-contents)**
 
 
