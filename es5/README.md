@@ -1567,7 +1567,7 @@
         moment = require('moment'),
         logger = require('services').logger,
         errorHelper = require('core').helper.error,
-        utility = require('./utilities’);
+        utility = require('./utilities');
 
     // good
     /**
