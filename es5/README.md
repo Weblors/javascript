@@ -361,6 +361,40 @@
     ```
 
   - Private functions should be named with a leading underscore
+    
+    ```javascript
+    // bad
+    function denormalizeCompanyForDevice (companies) {
+        return Q.all(
+            _(companies).map(fetchAndFormatCompanyData(deviceDisplay))
+                .value()
+        ).then(function (obj) {
+            obj = _.compact(obj);
+    
+            if (obj.length === 0) {
+                throw errorHelper.nonFatalError('No companies found for the given Candidate', 'zero_companies');
+            }
+    
+            return obj;
+        });
+    }
+    
+    // good
+    function _denormalizeCompanyForDevice (companies) {
+        return Q.all(
+            _(companies).map(fetchAndFormatCompanyData(deviceDisplay))
+                .value()
+        ).then(function (obj) {
+            obj = _.compact(obj);
+    
+            if (obj.length === 0) {
+                throw errorHelper.nonFatalError('No companies found for the given Candidate', 'zero_companies');
+            }
+    
+            return obj;
+        });
+    }
+    ```
   
 **[⬆ back to top](#table-of-contents)**
 
